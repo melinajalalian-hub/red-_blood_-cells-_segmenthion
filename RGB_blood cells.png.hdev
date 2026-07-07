@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.2" halcon_version="18.11.0.1">
+<procedure name="main">
+<interface/>
+<body>
+<l>read_image (Image, 'C:/Program Files/MVTec/HALCON-18.11-Progress/doc/html/manuals/hdevelop_users_guide/images/blood_cells .png.jpg')</l>
+<c></c>
+<c>* Convert to gray if needed</c>
+<l>count_channels (Image, Channels)</l>
+<l>if (Channels == 3)</l>
+<l>    rgb1_to_gray (Image, GrayImage)</l>
+<l>else</l>
+<l>    GrayImage := Image</l>
+<l>endif</l>
+<c></c>
+<c>* Enhance contrast</c>
+<l>median_image (GrayImage, MedianImage, 'circle', 3, 'mirrored')</l>
+<l>emphasize (MedianImage, EmphasizedImage, 7, 7, 1)</l>
+<c></c>
+<c>* Threshold</c>
+<l>binary_threshold (EmphasizedImage, Region, 'max_separability', 'dark', UsedThreshold)</l>
+<c></c>
+<c>* Morphological cleanup</c>
+<l>opening_circle (Region, RegionOpening, 2.5)</l>
+<l>closing_circle (RegionOpening, RegionClosing, 3.5)</l>
+<c></c>
+<c>* Remove small/noisy regions</c>
+<l>connection (RegionClosing, ConnectedRegions)</l>
+<l>select_shape (ConnectedRegions, SelectedRegions, ['area','circularity'], 'and', [50,0.4], [5000,1.0])</l>
+<c></c>
+<c>* Count cells</c>
+<l>count_obj (SelectedRegions, NumCells)</l>
+<c></c>
+<c>* Display result</c>
+<l>dev_close_window ()</l>
+<l>dev_open_window (0, 0, 800, 600, 'black', WindowHandle)</l>
+<l>dev_display (Image)</l>
+<c></c>
+<c>* Color each cell differently</c>
+<l>dev_set_draw ('margin')</l>
+<l>dev_set_line_width (2)</l>
+<c></c>
+<l>for I := 1 to NumCells by 1</l>
+<l>    select_obj (SelectedRegions, SingleCell, I)</l>
+<c></c>
+<c>    * Generate a random color</c>
+<l>    R := rand(255)</l>
+<l>    G := rand(255)</l>
+<l>    B := rand(255)</l>
+<l>    dev_set_color (rand(255), rand(255), rand(255])</l>
+<c></c>
+<l>    dev_display (SingleCell)</l>
+<l>endfor</l>
+<c></c>
+<c>* Show count</c>
+<l>disp_message (WindowHandle, 'RBC Count: ' + NumCells, 'window', 20, 20, 'green', 'true')</l>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>
